@@ -1,0 +1,14 @@
+# R environment (contains API keys — never commit)
+.Renviron
+
+# R session artefacts
+.Rhistory
+.RData
+.Rproj.user/
+
+# Output files
+output/
+
+# OS
+.DS_Store
+Thumbs.db
