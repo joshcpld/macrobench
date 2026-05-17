@@ -4,6 +4,7 @@
 # R session artefacts
 .Rhistory
 .RData
+*.RData
 .Rproj.user/
 
 # Output files

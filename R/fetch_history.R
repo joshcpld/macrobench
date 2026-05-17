@@ -11,10 +11,10 @@ library(readabs)
 #   CPIAUCSL:       CPI all urban consumers, index 1982-84=100, monthly SA
 #   UNRATE:         Unemployment rate %, monthly SA
 #
-# Australia — ABS for GDP + unemployment, FRED for CPI:
-#   A2304402X:      GDP chain volume measure, $M, quarterly SA  (ABS 5206.0)
-#   AUSCPIALLQINMEI:CPI all items index 2015=100, quarterly (OECD via FRED)
-#   A84423050A:     Unemployment rate %, monthly SA             (ABS 6202.0)
+# Australia — all via ABS:
+#   A2304402X:  GDP chain volume measure, $M, quarterly SA  (ABS 5206.0)
+#   A2325846C:  CPI all groups price index, quarterly        (ABS 6401.0)
+#   A84423050A: Unemployment rate %, monthly SA              (ABS 6202.0)
 
 us_fred_series <- list(
   GDP          = "GDPC1",
@@ -24,11 +24,8 @@ us_fred_series <- list(
 
 aus_abs_series <- list(
   GDP          = "A2304402X",
+  Inflation    = "A2325846C",
   Unemployment = "A84423050A"
-)
-
-aus_fred_series <- list(
-  Inflation = "AUSCPIALLQINMEI"
 )
 
 # ---- Helper: monthly -> quarterly average ----
@@ -71,45 +68,22 @@ fetch_history_us <- function(start_date) {
 
 fetch_history_aus <- function(start_date) {
 
-  api_key <- Sys.getenv("FRED_API_KEY")
-  if (nchar(api_key) > 0 && api_key != "your_key_here") fredr_set_key(api_key)
+  # All three Australian series via ABS read_abs_series()
+  map_dfr(names(aus_abs_series), function(var_name) {
 
-  # ---- ABS series (GDP + unemployment) ----
-  abs_raw <- read_abs_series(unlist(aus_abs_series))
-
-  abs_data <- map_dfr(names(aus_abs_series), function(var_name) {
-
-    sid <- aus_abs_series[[var_name]]
-
-    processed <- abs_raw %>%
-      filter(series_id == sid)
+    raw <- read_abs_series(aus_abs_series[[var_name]])
 
     # Unemployment is monthly — resample to quarterly average
-    if (var_name == "Unemployment") processed <- to_quarterly(processed)
+    processed <- if (var_name == "Unemployment") to_quarterly(raw) else raw
 
     processed %>%
-      filter(date >= as.Date(start_date), !is.na(value)) %>%
+      dplyr::filter(date >= as.Date(start_date), !is.na(value)) %>%
       transmute(
         quarter  = as.Date(floor_date(date, "quarter")),
         variable = var_name,
         value    = round(value, 4)
       )
   })
-
-  # ---- FRED series (CPI index) ----
-  fred_data <- map_dfr(names(aus_fred_series), function(var_name) {
-
-    fredr(series_id = aus_fred_series[[var_name]],
-          observation_start = as.Date(start_date)) %>%
-      filter(!is.na(value)) %>%
-      transmute(
-        quarter  = as.Date(floor_date(date, "quarter")),
-        variable = var_name,
-        value    = round(value, 4)
-      )
-  })
-
-  bind_rows(abs_data, fred_data)
 }
 
 # ---- Public interface ----
@@ -117,7 +91,7 @@ fetch_history_aus <- function(start_date) {
 # GDP in local $M or $B, CPI as index, unemployment as rate %.
 # QoQ / YoY transformations applied downstream in the app.
 
-fetch_history <- function(country, start_date = Sys.Date() - 365 * 10) {
+fetch_history <- function(country, start_date = as.Date("1900-01-01")) {
   switch(country,
     US        = fetch_history_us(start_date),
     Australia = fetch_history_aus(start_date),
@@ -125,7 +99,7 @@ fetch_history <- function(country, start_date = Sys.Date() - 365 * 10) {
   )
 }
 
-fetch_all_history <- function(start_date = Sys.Date() - 365 * 10) {
+fetch_all_history <- function(start_date = as.Date("1900-01-01")) {
   c("US", "Australia") %>%
     map_dfr(~ fetch_history(.x, start_date) %>% mutate(country = .x))
 }

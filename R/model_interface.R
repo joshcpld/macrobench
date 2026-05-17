@@ -6,7 +6,10 @@ library(tidyverse)
 # Returns:
 #   tibble with columns: quarter (Date), variable (chr), forecast (dbl)
 
-run_forecast <- function(country) {
+# last_history_date: the last observed quarter for this country (Date).
+# Passed to the model function so it knows where to start forecasting.
+# Stubs can ignore it; real VAR models should use it as the forecast origin.
+run_forecast <- function(country, last_history_date = NULL) {
 
   if (!country %in% names(models_config)) {
     stop(sprintf("Country '%s' not found in models_config. Available: %s",
@@ -14,7 +17,13 @@ run_forecast <- function(country) {
   }
 
   model_fn <- models_config[[country]]
-  result   <- model_fn()
+
+  # Call model with last_history_date if the function accepts it
+  result <- if ("last_history_date" %in% names(formals(model_fn))) {
+    model_fn(last_history_date = last_history_date)
+  } else {
+    model_fn()
+  }
 
   # ---- Validate output contract ----
   required_cols <- c("quarter", "variable", "forecast")
@@ -39,8 +48,19 @@ run_forecast <- function(country) {
 
 }
 
-# Convenience wrapper: run all countries and return a combined tibble
-run_all_forecasts <- function() {
+# Convenience wrapper: run all countries and return a combined tibble.
+# history_df: optional tibble(country, variable, quarter, value) used to
+# derive last_history_date per country for real VAR models.
+run_all_forecasts <- function(history_df = NULL) {
   names(models_config) %>%
-    map_dfr(~ run_forecast(.x) %>% mutate(country = .x))
+    map_dfr(function(co) {
+      last_date <- if (!is.null(history_df)) {
+        history_df %>%
+          dplyr::filter(country == co) %>%
+          pull(quarter) %>%
+          max(na.rm = TRUE)
+      } else NULL
+
+      run_forecast(co, last_history_date = last_date) %>% mutate(country = co)
+    })
 }
