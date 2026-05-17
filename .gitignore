@@ -7,8 +7,10 @@
 *.RData
 .Rproj.user/
 
-# Output files
-output/
+# Output files (keep README screenshots tracked)
+output/*
+!output/screenshots/
+!output/screenshots/**
 
 # OS
 .DS_Store

@@ -17,6 +17,18 @@ Current coverage: **United States** and **Australia**, across **GDP**, **Inflati
 
 ---
 
+## Screenshots
+
+Forecasts and overlays (Australia, GDP):
+
+![Australia GDP: chart with history, model and baseline](output/screenshots/aus%20gdp.png)
+
+App shell:
+
+![Navbar and variable tabs](output/screenshots/landing%20page.png)
+
+---
+
 ## Modularity
 
 The model output contract — `tibble(quarter, variable, forecast)` — is the only interface between the models and the app. Everything downstream (charts, judgement tables, vintaging, export) picks up new content automatically.
