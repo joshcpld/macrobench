@@ -1,6 +1,6 @@
 # MacroBench
 
-R Shiny app for producing, judging and exporting VAR macroeconomic forecasts across countries and variables.
+R Shiny app for producing, judging and exporting model agnostic macroeconomic forecasts across countries and variables.
 
 ---
 
