@@ -189,7 +189,7 @@ ui <- do.call(
   page_navbar,
   c(
     list(
-      title    = "Macro Forecasting Tool",
+      title    = "MacroBench",
       theme    = bs_theme(
         bg        = "#ffffff",
         fg        = "#1a1a2e",
