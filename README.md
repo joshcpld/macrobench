@@ -1,6 +1,6 @@
 # MacroBench
 
-R Shiny app for producing, judging and exporting model agnostic macroeconomic forecasts across countries and variables.
+R Shiny app for producing, judging and exporting model agnostic macroeconomic forecasts across countries and variables. This is a shell project, intended to derive the minimum viable product for producing a global forecasting infrastructure. The intention is not to deliver actualy models/analysis on this repo.
 
 ---
 
@@ -154,11 +154,3 @@ To overlay past vintages on charts, use the **Overlay baselines** selector on ea
 | Australia | GDP | ABS 5206.0 | A2304402X |
 | Australia | Inflation | ABS 6401.0 | A2325846C |
 | Australia | Unemployment | ABS 6202.0 | A84423050A |
-
----
-
-## Planned features
-
-- **Real VAR/BVAR models**: replace stubs with estimated models using `vars` or `BVAR` packages
-- **Forecast evaluation panel**: MAE/RMSE table comparing saved vintages against realised outcomes
-- **Scenario analysis**: lock one variable and propagate shocks through the system via the model structure
